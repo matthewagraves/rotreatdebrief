@@ -2,97 +2,86 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Townhall Survey — Rohit Group</title>
+  <title>Townhall Feedback</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    :root{--accent:#0f6b61;--muted:#6b7176;--bg:#f6faf9;font-family:Inter,-apple-system,system-ui,Segoe UI,Roboto,Arial}
-    body{margin:0;background:var(--bg);color:#0f1720}
-    .wrap{max-width:820px;margin:28px auto;padding:18px}
-    .card{background:#fff;padding:18px;border-radius:12px;box-shadow:0 8px 24px rgba(11,87,79,0.06)}
-    h1{margin:0 0 6px;font-size:18px}
-    p.lead{margin:0 0 12px;color:var(--muted);font-size:14px}
-    label{font-weight:600;margin-bottom:6px;display:block}
-    .stars{display:flex;gap:8px;margin:8px 0 12px}
-    .star{padding:8px 12px;border-radius:8px;border:1px solid #e8f0ee;background:#fff;cursor:pointer}
-    .star.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-    textarea{width:100%;min-height:96px;padding:10px;border-radius:8px;border:1px solid #e8f0ee}
-    .row{margin-bottom:12px}
-    .controls{display:flex;gap:10px;align-items:center;margin-top:12px}
-    button{background:var(--accent);color:#fff;border:0;padding:9px 14px;border-radius:9px;cursor:pointer;font-weight:600}
-    button.secondary{background:transparent;border:1px solid var(--accent);color:var(--accent)}
-    .muted{color:var(--muted);font-size:13px}
+    body { font-family: Arial, sans-serif; background:#f7f9fa; margin:0; padding:20px; }
+    .card { max-width:700px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 4px 14px rgba(0,0,0,0.08); }
+    h1 { margin-top:0; font-size:22px; }
+    .item { margin-bottom:18px; }
+    .label { font-weight:600; margin-bottom:6px; }
+    .stars input { display:none; }
+    .stars label {
+      font-size:22px; color:#ccc; cursor:pointer; padding:0 3px;
+    }
+    .stars input:checked ~ label,
+    .stars label:hover,
+    .stars label:hover ~ label {
+      color:#f5b301;
+    }
+    textarea { width:100%; height:90px; padding:10px; border-radius:6px; border:1px solid #ddd; }
+    button { margin-top:18px; padding:10px 16px; background:#0f6b61; color:#fff; border:0; border-radius:6px; cursor:pointer; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Accounting & AP — Townhall Feedback</h1>
-      <p class="lead">Rate each item (1–5). One short general comment. Submit anonymously if you prefer.</p>
 
-      <form id="survey">
-        <div class="row"><label>Rotreat Recap — Sonam</label><div class="stars" data-name="rotreat"></div></div>
-        <div class="row"><label>2026 Budget Highlights — Mansi & Sonam</label><div class="stars" data-name="budget"></div></div>
-        <div class="row"><label>Case Study — Matthew Graves</label><div class="stars" data-name="case_study"></div></div>
-        <div class="row"><label>Accounting highlights & 2026 plans — Usman</label><div class="stars" data-name="accounting"></div></div>
-        <div class="row"><label>Tax highlights & 2026 plans — Liza</label><div class="stars" data-name="tax"></div></div>
-        <div class="row"><label>New hire introductions</label><div class="stars" data-name="new_hires"></div></div>
-        <div class="row"><label>Overall townhall rating</label><div class="stars" data-name="overall"></div></div>
+<div class="card">
+  <h1>Townhall Feedback</h1>
+  <p>Please rate each agenda item (1–5 stars) and share any comments.</p>
 
-        <div class="row">
-          <label>General comment</label>
-          <textarea id="comments" placeholder="One short comment or suggestion"></textarea>
+  <!-- Rating Component Template -->
+  <script>
+    function starRow(name, label) {
+      return `
+        <div class="item">
+          <div class="label">${label}</div>
+          <div class="stars">
+            ${[5,4,3,2,1].map(n => `
+              <input type="radio" id="${name}_${n}" name="${name}" value="${n}">
+              <label for="${name}_${n}">&#9733;</label>
+            `).join('')}
+          </div>
         </div>
+      `;
+    }
+  </script>
 
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <label style="font-size:13px"><input id="anon" type="checkbox"> Submit anonymously</label>
-          <input id="name" placeholder="Name (optional)" style="padding:8px;border-radius:8px;border:1px solid #e8f0ee" />
-          <input id="email" placeholder="Email (optional)" style="padding:8px;border-radius:8px;border:1px solid #e8f0ee" />
-        </div>
+  <div id="ratings"></div>
 
-        <div class="controls">
-          <button type="submit">Submit</button>
-          <button type="button" id="viewResults" class="secondary">View results</button>
-          <div style="margin-left:auto" class="muted">Data is saved in this browser (localStorage) by default.</div>
-        </div>
-
-        <div id="msg" style="margin-top:10px;color:green;display:none"></div>
-      </form>
-    </div>
+  <div class="item">
+    <div class="label">General Comments</div>
+    <textarea id="comments" placeholder="Your feedback..."></textarea>
   </div>
 
+  <button onclick="submitFeedback()">Submit Feedback</button>
+</div>
+
 <script>
-(function(){
-  const fields = ["rotreat","budget","case_study","accounting","tax","new_hires","overall"];
-  // create star widgets
-  document.querySelectorAll('.stars').forEach(c=>{
-    for(let i=1;i<=5;i++){
-      const b = document.createElement('button');
-      b.type='button'; b.className='star'; b.textContent=i; b.dataset.value=i;
-      b.addEventListener('click', ()=> {
-        [...c.children].forEach(x=>x.classList.remove('active'));
-        b.classList.add('active');
-        c.dataset.sel = i;
-      });
-      c.appendChild(b);
-    }
-  });
+  const items = [
+    ["rotreat", "Rotreat Recap (Sonam)"],
+    ["budget", "2026 Budget Highlights (Mansi & Sonam)"],
+    ["case", "Case Study Discussion (Matthew Graves)"],
+    ["accounting", "Accounting Highlights & 2026 Plans (Usman)"],
+    ["tax", "Tax Highlights & 2026 Plans (Liza)"],
+    ["hires", "New Hire Introductions (Rohit, Abhilash, Robisha)"],
+    ["overall", "Overall Townhall Rating"]
+  ];
 
-  function val(name){ const c = document.querySelector('.stars[data-name="'+name+'"]'); return Number(c?.dataset.sel||0); }
-  function collect(){ const out={submitted_at:new Date().toISOString()}; fields.forEach(f=>out[f]=val(f)); out.comments=document.getElementById('comments').value.trim(); out.anonymous=!!document.getElementById('anon').checked; out.name=out.anonymous ? "" : (document.getElementById('name').value||""); out.email=out.anonymous ? "" : (document.getElementById('email').value||""); return out; }
+  document.getElementById("ratings").innerHTML =
+    items.map(i => starRow(i[0], i[1])).join("");
 
-  const STORAGE_KEY = 'townhall_feedback_submissions';
-  document.getElementById('survey').addEventListener('submit', (e)=>{
-    e.preventDefault();
-    const payload = collect();
-    if(!payload.overall){ alert('Please provide overall rating (1–5).'); return; }
-    const raw = localStorage.getItem(STORAGE_KEY); const arr = raw ? JSON.parse(raw) : []; arr.push(payload); localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-    document.getElementById('msg').textContent='Thanks — feedback recorded.'; document.getElementById('msg').style.display='block';
-    setTimeout(()=>document.getElementById('msg').style.display='none',2000);
-    document.getElementById('survey').reset(); document.querySelectorAll('.star').forEach(s=>s.classList.remove('active')); document.querySelectorAll('.stars').forEach(c=>c.removeAttribute('data-sel'));
-  });
+  function submitFeedback() {
+    const data = {};
+    items.forEach(([key]) => {
+      const val = document.querySelector(`input[name="${key}"]:checked`);
+      data[key] = val ? Number(val.value) : null;
+    });
+    data.comments = document.getElementById("comments").value.trim();
 
-  document.getElementById('viewResults').addEventListener('click', ()=> location.href='results.html');
-})();
+    console.log("Submitted:", data);
+    alert("Thank you for your feedback!");
+  }
 </script>
+
 </body>
 </html>
