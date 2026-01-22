@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Townhall Feedback — Accounting & AP | Rohit Group</title>
+  <title>Townhall Survey — Rohit Group</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root{--accent:#0f6b61;--muted:#6b7176;--bg:#f6faf9;font-family:Inter,-apple-system,system-ui,Segoe UI,Roboto,Arial}
@@ -21,51 +21,22 @@
     button{background:var(--accent);color:#fff;border:0;padding:9px 14px;border-radius:9px;cursor:pointer;font-weight:600}
     button.secondary{background:transparent;border:1px solid var(--accent);color:var(--accent)}
     .muted{color:var(--muted);font-size:13px}
-    a.link{color:var(--accent);text-decoration:none}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <h1>Accounting & AP — Townhall Feedback</h1>
-      <p class="lead">Quick: rate each agenda item (1–5) and leave one general comment. Thanks!</p>
+      <p class="lead">Rate each item (1–5). One short general comment. Submit anonymously if you prefer.</p>
 
       <form id="survey">
-        <!-- agenda items -->
-        <div class="row">
-          <label>Rotreat Recap — Sonam (Irshad Manji)</label>
-          <div class="stars" data-name="rotreat"></div>
-        </div>
-
-        <div class="row">
-          <label>2026 Budget Highlights — Mansi & Sonam</label>
-          <div class="stars" data-name="budget"></div>
-        </div>
-
-        <div class="row">
-          <label>Case Study — Matthew Graves</label>
-          <div class="stars" data-name="case_study"></div>
-        </div>
-
-        <div class="row">
-          <label>Accounting highlights & 2026 plans — Usman</label>
-          <div class="stars" data-name="accounting"></div>
-        </div>
-
-        <div class="row">
-          <label>Tax highlights & 2026 plans — Liza</label>
-          <div class="stars" data-name="tax"></div>
-        </div>
-
-        <div class="row">
-          <label>New hire introductions</label>
-          <div class="stars" data-name="new_hires"></div>
-        </div>
-
-        <div class="row">
-          <label>Overall townhall rating</label>
-          <div class="stars" data-name="overall"></div>
-        </div>
+        <div class="row"><label>Rotreat Recap — Sonam</label><div class="stars" data-name="rotreat"></div></div>
+        <div class="row"><label>2026 Budget Highlights — Mansi & Sonam</label><div class="stars" data-name="budget"></div></div>
+        <div class="row"><label>Case Study — Matthew Graves</label><div class="stars" data-name="case_study"></div></div>
+        <div class="row"><label>Accounting highlights & 2026 plans — Usman</label><div class="stars" data-name="accounting"></div></div>
+        <div class="row"><label>Tax highlights & 2026 plans — Liza</label><div class="stars" data-name="tax"></div></div>
+        <div class="row"><label>New hire introductions</label><div class="stars" data-name="new_hires"></div></div>
+        <div class="row"><label>Overall townhall rating</label><div class="stars" data-name="overall"></div></div>
 
         <div class="row">
           <label>General comment</label>
@@ -81,7 +52,7 @@
         <div class="controls">
           <button type="submit">Submit</button>
           <button type="button" id="viewResults" class="secondary">View results</button>
-          <div style="margin-left:auto" class="muted">Data: saved locally or POSTed to server (see hosting instructions)</div>
+          <div style="margin-left:auto" class="muted">Data is saved in this browser (localStorage) by default.</div>
         </div>
 
         <div id="msg" style="margin-top:10px;color:green;display:none"></div>
@@ -92,11 +63,11 @@
 <script>
 (function(){
   const fields = ["rotreat","budget","case_study","accounting","tax","new_hires","overall"];
-  // build star widgets
+  // create star widgets
   document.querySelectorAll('.stars').forEach(c=>{
     for(let i=1;i<=5;i++){
       const b = document.createElement('button');
-      b.type='button'; b.className='star'; b.textContent = i; b.dataset.value = i;
+      b.type='button'; b.className='star'; b.textContent=i; b.dataset.value=i;
       b.addEventListener('click', ()=> {
         [...c.children].forEach(x=>x.classList.remove('active'));
         b.classList.add('active');
@@ -107,38 +78,22 @@
   });
 
   function val(name){ const c = document.querySelector('.stars[data-name="'+name+'"]'); return Number(c?.dataset.sel||0); }
-  function collect(){
-    const out = { submitted_at: new Date().toISOString() };
-    fields.forEach(f => out[f] = val(f));
-    out.comments = document.getElementById('comments').value.trim();
-    out.anonymous = !!document.getElementById('anon').checked;
-    out.name = out.anonymous ? "" : (document.getElementById('name').value || "");
-    out.email = out.anonymous ? "" : (document.getElementById('email').value || "");
-    return out;
-  }
+  function collect(){ const out={submitted_at:new Date().toISOString()}; fields.forEach(f=>out[f]=val(f)); out.comments=document.getElementById('comments').value.trim(); out.anonymous=!!document.getElementById('anon').checked; out.name=out.anonymous ? "" : (document.getElementById('name').value||""); out.email=out.anonymous ? "" : (document.getElementById('email').value||""); return out; }
 
-  // default behavior: save to localStorage so results page can read
   const STORAGE_KEY = 'townhall_feedback_submissions';
-
-  document.getElementById('survey').addEventListener('submit', async (e)=>{
+  document.getElementById('survey').addEventListener('submit', (e)=>{
     e.preventDefault();
     const payload = collect();
     if(!payload.overall){ alert('Please provide overall rating (1–5).'); return; }
-    // store locally
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    arr.push(payload);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-    document.getElementById('msg').textContent = 'Thanks — feedback recorded.'; document.getElementById('msg').style.display='block';
+    const raw = localStorage.getItem(STORAGE_KEY); const arr = raw ? JSON.parse(raw) : []; arr.push(payload); localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    document.getElementById('msg').textContent='Thanks — feedback recorded.'; document.getElementById('msg').style.display='block';
     setTimeout(()=>document.getElementById('msg').style.display='none',2000);
-    // reset form
-    document.getElementById('survey').reset();
-    document.querySelectorAll('.star').forEach(s=>s.classList.remove('active'));
-    document.querySelectorAll('.stars').forEach(c=>c.removeAttribute('data-sel'));
+    document.getElementById('survey').reset(); document.querySelectorAll('.star').forEach(s=>s.classList.remove('active')); document.querySelectorAll('.stars').forEach(c=>c.removeAttribute('data-sel'));
   });
 
-  document.getElementById('viewResults').addEventListener('click', ()=> location.href = 'results.html');
+  document.getElementById('viewResults').addEventListener('click', ()=> location.href='results.html');
 })();
 </script>
 </body>
 </html>
+
