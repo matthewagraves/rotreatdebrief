@@ -75,7 +75,7 @@
     return `<div class="comment"><div style="font-weight:600;margin-bottom:6px">${who}</div><div>${escapeHtml(c.comments)}</div></div>`;
   }).join('');
 
-  document.getElementById('back').addEventListener('click', ()=> location.href='survey.html');
+  document.getElementById('back').addEventListener('click', ()=> location.href='index.html');
   document.getElementById('downloadCsv').addEventListener('click', ()=>{
     if(!arr.length){ alert('No submissions'); return; }
     const headers = Object.keys(arr[0]);
@@ -89,3 +89,4 @@
 </script>
 </body>
 </html>
+
