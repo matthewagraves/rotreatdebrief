@@ -16,7 +16,6 @@
     .comment{padding:10px;border-radius:8px;border:1px solid #eef6f4;margin-bottom:8px;background:#fbfffd}
     .controls{display:flex;gap:10px;margin-top:12px}
     button{background:var(--accent);color:#fff;border:0;padding:8px 12px;border-radius:9px;cursor:pointer}
-    a.link{color:var(--accent);text-decoration:none}
   </style>
 </head>
 <body>
@@ -24,13 +23,12 @@
     <div class="card">
       <h1>Townhall Feedback — Results</h1>
       <div id="meta" class="muted">Loading…</div>
-
       <div id="averages" style="margin-top:12px"></div>
 
       <div class="controls">
         <button id="downloadCsv">Download CSV</button>
         <button id="back">Back to survey</button>
-        <div style="margin-left:auto" class="muted">Note: results read from this browser's localStorage unless hosted with a server.</div>
+        <div style="margin-left:auto" class="muted">This reads submissions stored in this browser (localStorage).</div>
       </div>
 
       <section style="margin-top:14px">
@@ -48,7 +46,7 @@
   const avgContainer = document.getElementById('averages');
   const commentsArea = document.getElementById('commentsArea');
 
-  if(!raw){ meta.textContent = 'No submissions found.'; avgContainer.innerHTML=''; commentsArea.innerHTML=''; return; }
+  if(!raw){ meta.textContent='No submissions found.'; avgContainer.innerHTML=''; commentsArea.innerHTML=''; return; }
   const arr = JSON.parse(raw || '[]');
   meta.textContent = 'Total submissions: ' + (arr.length || 0);
 
@@ -71,21 +69,19 @@
   }).join('');
 
   const comments = arr.filter(r=> r.comments && r.comments.trim());
-  if(!comments.length) commentsArea.textContent = 'No comments yet.';
+  if(!comments.length) commentsArea.textContent='No comments yet.';
   else commentsArea.innerHTML = comments.map(c=>{
     const who = c.anonymous ? 'Anonymous' : (c.name || c.email || 'Participant');
     return `<div class="comment"><div style="font-weight:600;margin-bottom:6px">${who}</div><div>${escapeHtml(c.comments)}</div></div>`;
   }).join('');
 
   document.getElementById('back').addEventListener('click', ()=> location.href='survey.html');
-
   document.getElementById('downloadCsv').addEventListener('click', ()=>{
     if(!arr.length){ alert('No submissions'); return; }
     const headers = Object.keys(arr[0]);
-    const csv = [headers.join(',')].concat(arr.map(r => headers.map(h=>'""'+String(r[h]||"").replace(/"/g,'""')+'"').join(','))).join('\\n');
-    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'townhall_feedback_all.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    const csv = [headers.join(',')].concat(arr.map(r => headers.map(h => '"'+String(r[h]||"").replace(/"/g,'""') + '"').join(','))).join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'}); const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download='townhall_feedback_all.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   });
 
   function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
